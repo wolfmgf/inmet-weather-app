@@ -24,10 +24,25 @@ export default async function PrevisaoPage({ searchParams }: PrevisaoPageProps) 
   if (cityQuery) {
     const municipios = await getTodosMunicipios();
     if (municipios.length > 0) {
-      cidadeEncontrada = municipios.find(m => normalizeString(m.NOME) === normalizeString(cityQuery)) || null;
+      cidadeEncontrada = municipios.find(m => normalizeString(m.nome) === normalizeString(cityQuery)) || null;
 
       if (cidadeEncontrada) {
-        previsao = await getPrevisaoPorCodigo(cidadeEncontrada.ID);
+        previsao = await getPrevisaoPorCodigo(cidadeEncontrada.geocode.toString());
+        console.log('[DEBUG PREVISAO PAGE] - Dados recebidos da API:', JSON.stringify(previsao, null, 2));
+        if (previsao) {
+          // Verificar estrutura dos dados especificamente para vento
+          const primeirosDados = Object.values(previsao)[0];
+          if (primeirosDados) {
+            const primeiroDia = Object.values(primeirosDados)[0];
+            if (primeiroDia) {
+              console.log('[DEBUG PREVISAO PAGE] - Dados manhã:', {
+                vento_int: primeiroDia.manha.vento_int,
+                vento_dir: primeiroDia.manha.vento_dir,
+                keys: Object.keys(primeiroDia.manha)
+              });
+            }
+          }
+        }
         if (!previsao) {
           error = "A previsão para esta cidade não está disponível no momento.";
         }
