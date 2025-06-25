@@ -1,3 +1,10 @@
+/**
+ * @fileoverview Página inicial da aplicação de previsão do tempo
+ * Exibe formulário de busca e informações sobre as funcionalidades
+ * @author Equipe de Desenvolvimento
+ * @version 1.0.0
+ */
+
 // app/page.tsx
 import CitySearchForm from '@/components/CitySearchForm';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -13,6 +20,13 @@ import {
   MapPin
 } from 'lucide-react';
 
+/**
+ * Página inicial da aplicação
+ * Apresenta o formulário de busca e demonstra as funcionalidades disponíveis
+ * 
+ * @component
+ * @returns Página inicial com hero section, formulário de busca e grid de funcionalidades
+ */
 export default function HomePage() {
   return (
     <main className="container mx-auto p-4 md:p-8">

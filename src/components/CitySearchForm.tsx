@@ -1,3 +1,10 @@
+/**
+ * @fileoverview Componente de formulário para busca de cidades brasileiras
+ * Permite ao usuário pesquisar previsão do tempo por nome do município
+ * @author Equipe de Desenvolvimento
+ * @version 1.0.0
+ */
+
 // components/CitySearchForm.tsx
 'use client';
 
@@ -7,10 +14,28 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Search } from 'lucide-react';
 
+/**
+ * Componente de formulário para busca de cidades brasileiras
+ * Redireciona para a página de previsão com o parâmetro de cidade
+ * 
+ * @component
+ * @example
+ * ```tsx
+ * <CitySearchForm />
+ * ```
+ * 
+ * @returns Formulário de busca de cidade com input e botão de submit
+ */
 export default function CitySearchForm() {
   const [city, setCity] = useState('');
   const router = useRouter();
 
+  /**
+   * Manipula o envio do formulário
+   * Valida se há texto inserido e navega para a página de previsão
+   * 
+   * @param e - Evento de submit do formulário
+   */
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (city.trim()) {

@@ -1,8 +1,23 @@
+/**
+ * @fileoverview Página de debug para visualizar municípios disponíveis
+ * Útil para desenvolvimento e verificação de dados da API do INMET
+ * @author Equipe de Desenvolvimento
+ * @version 1.0.0
+ */
+
 // app/debug/page.tsx
 import { getTodosMunicipios } from '@/lib/inmet.service';
 
+// Força geração dinâmica para sempre buscar dados atualizados
 export const dynamic = 'force-dynamic';
 
+/**
+ * Página de debug para visualizar municípios disponíveis
+ * Exibe lista dos primeiros 20 municípios com links para previsão
+ * 
+ * @component
+ * @returns Página de debug com lista de municípios
+ */
 export default async function DebugPage() {
   const municipios = await getTodosMunicipios();
 

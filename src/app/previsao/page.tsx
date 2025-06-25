@@ -1,3 +1,10 @@
+/**
+ * @fileoverview Página de exibição de previsão do tempo para municípios
+ * Busca dados da API do INMET e exibe previsão completa
+ * @author Equipe de Desenvolvimento
+ * @version 1.0.0
+ */
+
 // app/previsao/page.tsx
 import { getTodosMunicipios, getPrevisaoPorCodigo } from '@/lib/inmet.service';
 import CitySearchForm from '@/components/CitySearchForm';
@@ -6,15 +13,32 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { AlertTriangle } from 'lucide-react';
 import { INMETMunicipio, INMETPrevisaoCompleta } from '@/types/inmet.types';
 
+// Força geração dinâmica para sempre buscar dados atualizados
 export const dynamic = 'force-dynamic';
 
+/** Props da página de previsão */
 interface PrevisaoPageProps {
   searchParams: { [key: string]: string | string[] | undefined };
 }
 
+/**
+ * Normaliza string removendo acentos e convertendo para minúsculas
+ * Usado para comparação de nomes de cidades
+ * 
+ * @param str - String para normalizar
+ * @returns String normalizada sem acentos em minúsculas
+ */
 const normalizeString = (str: string) =>
   str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
 
+/**
+ * Página de previsão do tempo
+ * Busca dados do INMET com base no parâmetro 'cidade' da URL
+ * 
+ * @component
+ * @param searchParams - Parâmetros de busca da URL
+ * @returns Página com previsão do tempo ou mensagens de erro
+ */
 export default async function PrevisaoPage({ searchParams }: PrevisaoPageProps) {
   const cityQuery = typeof searchParams.cidade === 'string' ? searchParams.cidade : '';
   let previsao: INMETPrevisaoCompleta | null = null;
