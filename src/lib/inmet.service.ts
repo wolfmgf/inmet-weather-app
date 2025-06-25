@@ -1,7 +1,9 @@
 // lib/inmet.service.ts
+
 import { INMETMunicipio, INMETPrevisaoCompleta } from "@/types/inmet.types";
 
-const API_BASE_URL = "https://apiprevmet.inmet.gov.br";
+// 1. ATUALIZAMOS A URL BASE PARA O NOVO PORTAL CENTRALIZADO
+const API_BASE_URL = "https://portal.inmet.gov.br/apim";
 
 /**
  * Busca a lista de todos os municípios monitorados pelo INMET.
@@ -10,7 +12,8 @@ const API_BASE_URL = "https://apiprevmet.inmet.gov.br";
  */
 export async function getTodosMunicipios(): Promise<INMETMunicipio[]> {
   try {
-    const response = await fetch(`${API_BASE_URL}/municipios`, {
+    // 2. ATUALIZAMOS O CAMINHO PARA O NOVO ENDPOINT DE MUNICÍPIOS
+    const response = await fetch(`${API_BASE_URL}/dados/municipios`, {
       next: { revalidate: 86400 }, // 24 horas em segundos
     });
     if (!response.ok) throw new Error("Falha ao buscar municípios.");
@@ -27,12 +30,19 @@ export async function getTodosMunicipios(): Promise<INMETMunicipio[]> {
  * @param codigo - O código numérico do município.
  * @returns Uma promessa que resolve para os dados da previsão ou nulo em caso de erro.
  */
-export async function getPrevisaoPorCodigo(codigo: string): Promise<INMETPrevisaoCompleta | null> {
+export async function getPrevisaoPorCodigo(
+  codigo: string
+): Promise<INMETPrevisaoCompleta | null> {
   try {
-    const response = await fetch(`${API_BASE_URL}/previsao/${codigo}`, {
-      next: { revalidate: 3600 }, // 1 hora em segundos
-    });
-    if (!response.ok) throw new Error(`Falha ao buscar previsão para o código ${codigo}.`);
+    // 3. ATUALIZAMOS O CAMINHO PARA O NOVO ENDPOINT DE PREVISÃO
+    const response = await fetch(
+      `${API_BASE_URL}/previsao/diaria/municipio/${codigo}`,
+      {
+        next: { revalidate: 3600 }, // 1 hora em segundos
+      }
+    );
+    if (!response.ok)
+      throw new Error(`Falha ao buscar previsão para o código ${codigo}.`);
     return await response.json();
   } catch (error) {
     console.error("Erro em getPrevisaoPorCodigo:", error);
