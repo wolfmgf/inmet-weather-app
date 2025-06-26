@@ -2,6 +2,23 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Leaflet Map Styles */
+@import "leaflet/dist/leaflet.css";
+
+/* Custom Leaflet overrides */
+.leaflet-container {
+  width: 100%;
+  height: 100%;
+}
+
+.leaflet-popup-content {
+  margin: 8px !important;
+}
+
+.leaflet-popup-content p {
+  margin: 4px 0 !important;
+}
+
 :root {
   --foreground-rgb: 0, 0, 0;
   --background-start-rgb: 214, 219, 220;
@@ -21,8 +38,6 @@
     text-wrap: balance;
   }
 }
-
-
 
 @layer base {
   :root {
@@ -79,8 +94,6 @@
     --chart-5: 340 75% 55%;
   }
 }
-
-
 
 @layer base {
   * {

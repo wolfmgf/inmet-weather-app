@@ -18,7 +18,9 @@ import {
   CloudRain,
   Compass,
   Cloud,
-  AlertTriangle
+  AlertTriangle,
+  Clock,
+  ImageIcon
 } from 'lucide-react';
 import Image from 'next/image';
 
@@ -49,13 +51,13 @@ const DetailedWeatherInfo = ({ periodo }: { periodo: INMETPeriodo }) => {
       )}
 
       {/* Índice UV */}
-      {periodo.indice_uv && (
+      {((periodo.indice_uv ?? (periodo as any).uv) as string) && (
         <div className="flex items-center justify-between p-3 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg">
           <span className="font-medium flex items-center gap-2">
             <Sun size={18} className="text-yellow-600" />
             Índice UV
           </span>
-          <span className="font-semibold">{periodo.indice_uv}</span>
+          <span className="font-semibold">{periodo.indice_uv ?? (periodo as any).uv}</span>
         </div>
       )}
 
@@ -157,30 +159,128 @@ const DetailedWeatherInfo = ({ periodo }: { periodo: INMETPeriodo }) => {
           <span className="font-semibold">{periodo.direcao_vento_graus}° ({periodo.vento_dir})</span>
         </div>
       )}
+
+      {/* Velocidade do Vento */}
+      {periodo.vento_int && (
+        <div className="flex items-center justify-between p-3 bg-purple-50 dark:bg-purple-900/20 rounded-lg">
+          <span className="font-medium flex items-center gap-2">
+            <Wind size={18} className="text-purple-600" />
+            Velocidade Vento
+          </span>
+          <span className="font-semibold">{periodo.vento_int} km/h</span>
+        </div>
+      )}
+    </div>
+  );
+};
+
+// Sub-componente para exibir informações extras detectadas na API
+const ExtraWeatherInfo = ({ periodo }: { periodo: INMETPeriodo }) => {
+  const hasExtraInfo = periodo.temp_max_tende || periodo.temp_min_tende ||
+    periodo.estacao || periodo.fonte || periodo.cod_icone;
+
+  if (!hasExtraInfo) return null;
+
+  return (
+    <div className="mt-4">
+      <h4 className="text-lg font-semibold mb-3 flex items-center gap-2">
+        <AlertTriangle size={18} className="text-blue-600" />
+        Informações Extras
+      </h4>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        {/* Tendência Temperatura Máxima */}
+        {periodo.temp_max_tende && (
+          <div className="flex items-center justify-between p-3 bg-red-50 dark:bg-red-900/20 rounded-lg">
+            <span className="font-medium flex items-center gap-2">
+              <Thermometer size={18} className="text-red-600" />
+              Tendência Temp Max
+            </span>
+            <span className="font-semibold">{periodo.temp_max_tende}</span>
+          </div>
+        )}
+
+        {/* Tendência Temperatura Mínima */}
+        {periodo.temp_min_tende && (
+          <div className="flex items-center justify-between p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+            <span className="font-medium flex items-center gap-2">
+              <Thermometer size={18} className="text-blue-600" />
+              Tendência Temp Min
+            </span>
+            <span className="font-semibold">{periodo.temp_min_tende}</span>
+          </div>
+        )}
+
+        {/* Estação do Ano */}
+        {periodo.estacao && (
+          <div className="flex items-center justify-between p-3 bg-green-50 dark:bg-green-900/20 rounded-lg">
+            <span className="font-medium flex items-center gap-2">
+              <Sun size={18} className="text-green-600" />
+              Estação
+            </span>
+            <span className="font-semibold">{periodo.estacao}</span>
+          </div>
+        )}
+
+        {/* Hora Específica */}
+        {periodo.hora && (
+          <div className="flex items-center justify-between p-3 bg-purple-50 dark:bg-purple-900/20 rounded-lg">
+            <span className="font-medium flex items-center gap-2">
+              <Clock size={18} className="text-purple-600" />
+              Hora
+            </span>
+            <span className="font-semibold">{periodo.hora}h</span>
+          </div>
+        )}
+
+        {/* Código do Ícone */}
+        {periodo.cod_icone && (
+          <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+            <span className="font-medium flex items-center gap-2">
+              <ImageIcon size={18} className="text-gray-600" />
+              Código Ícone
+            </span>
+            <span className="font-semibold">{periodo.cod_icone}</span>
+          </div>
+        )}
+
+        {/* Fonte dos Dados */}
+        {periodo.fonte && (
+          <div className="flex items-center justify-between p-3 bg-indigo-50 dark:bg-indigo-900/20 rounded-lg">
+            <span className="font-medium flex items-center gap-2">
+              <AlertTriangle size={18} className="text-indigo-600" />
+              Fonte
+            </span>
+            <span className="font-semibold">{periodo.fonte}</span>
+          </div>
+        )}
+      </div>
     </div>
   );
 };
 
 // Sub-componente para exibir informações astronômicas
 const AstroInfo = ({ periodo }: { periodo: INMETPeriodo }) => {
+  const nascer = periodo.nascer_sol || periodo.nascer;
+  const poente = periodo.por_sol || periodo.ocaso;
+
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-4 p-4 bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 rounded-lg">
-      {periodo.nascer_sol && (
+      {nascer && (
         <div className="flex items-center gap-3">
           <Sunrise size={20} className="text-orange-500" />
           <div>
             <p className="text-sm font-medium">Nascer do Sol</p>
-            <p className="font-semibold">{periodo.nascer_sol}</p>
+            <p className="font-semibold">{nascer}</p>
           </div>
         </div>
       )}
 
-      {periodo.por_sol && (
+      {poente && (
         <div className="flex items-center gap-3">
           <Sunset size={20} className="text-orange-600" />
           <div>
             <p className="text-sm font-medium">Pôr do Sol</p>
-            <p className="font-semibold">{periodo.por_sol}</p>
+            <p className="font-semibold">{poente}</p>
           </div>
         </div>
       )}
@@ -202,47 +302,79 @@ const AstroInfo = ({ periodo }: { periodo: INMETPeriodo }) => {
 const PeriodoCard = ({ periodo, nomePeriodo }: { periodo: INMETPeriodo; nomePeriodo: string }) => {
   const PeriodoIcon = nomePeriodo === 'Manhã' ? Sunrise : nomePeriodo === 'Tarde' ? Sun : Sunset;
 
-  // Debug completo do objeto periodo
-  console.log(`[DEBUG ${nomePeriodo}] - Objeto completo:`, JSON.stringify(periodo, null, 2));
-  console.log(`[DEBUG ${nomePeriodo}] - Campos de ícone:`, {
-    ico: periodo.ico,
-    icone: periodo.icone,
-    tem_ico: !!periodo.ico,
-    tem_icone: !!periodo.icone,
-    ico_diferente_icone: periodo.ico !== periodo.icone
-  });
-  console.log(`[DEBUG ${nomePeriodo}] - Informações básicas:`, {
-    cidade: periodo.cidade,
-    dia_semana: periodo.dia_semana,
-    entidade: periodo.entidade,
-    uf: periodo.uf
-  });
-
   return (
-    <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 p-6 rounded-xl shadow-sm space-y-6">
-      <div className="flex items-center gap-3">
+    <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 p-6 rounded-xl shadow-lg space-y-6">
+      {/* Header com ícone do período */}
+      <div className="flex items-center gap-3 pb-4 border-b border-slate-200 dark:border-slate-700">
         <PeriodoIcon className="h-7 w-7 text-primary" />
         <h4 className="text-xl font-bold">{nomePeriodo}</h4>
       </div>
 
-      <div className="flex items-center gap-4">
-        <Image src={periodo.icone} alt={periodo.resumo} width={80} height={80} unoptimized />
+      {/* Seção principal com ícone e resumo */}
+      <div className="flex items-start gap-6">
+        <div className="flex-shrink-0">
+          <Image
+            src={`https://portal.inmet.gov.br/img/tempo/${periodo.ico}.png`}
+            alt={periodo.resumo}
+            width={90}
+            height={90}
+            unoptimized
+            className="rounded-lg shadow-md border border-slate-200 dark:border-slate-600"
+          />
+        </div>
         <div className="flex-1">
-          <p className="text-lg font-medium">{periodo.resumo}</p>
-          <div className="grid grid-cols-3 gap-4 mt-2 text-sm">
-            <div className="text-center">
-              <p className="text-muted-foreground">Temp.</p>
-              <p className="font-semibold">{periodo.temp_min}°C - {periodo.temp_max}°C</p>
+          <h5 className="text-xl font-semibold mb-4 text-slate-800 dark:text-slate-200">{periodo.resumo}</h5>
+
+          {/* Grid principal com métricas */}
+          <div className="grid grid-cols-2 gap-4">
+            {/* Temperatura */}
+            <div className="text-center p-4 bg-gradient-to-br from-red-50 to-orange-50 dark:from-red-900/20 dark:to-orange-900/20 rounded-lg border border-red-100 dark:border-red-800">
+              <Thermometer className="h-6 w-6 text-red-500 mx-auto mb-2" />
+              <p className="text-xs text-slate-600 dark:text-slate-400 mb-1 font-medium">TEMPERATURA</p>
+              <p className="font-bold text-base text-slate-800 dark:text-slate-200">{periodo.temp_min}°C - {periodo.temp_max}°C</p>
             </div>
-            <div className="text-center">
-              <p className="text-muted-foreground">Umidade</p>
-              <p className="font-semibold">{periodo.umidade_min}% - {periodo.umidade_max}%</p>
+
+            {/* Umidade */}
+            <div className="text-center p-4 bg-gradient-to-br from-blue-50 to-cyan-50 dark:from-blue-900/20 dark:to-cyan-900/20 rounded-lg border border-blue-100 dark:border-blue-800">
+              <Droplets className="h-6 w-6 text-blue-500 mx-auto mb-2" />
+              <p className="text-xs text-slate-600 dark:text-slate-400 mb-1 font-medium">UMIDADE</p>
+              <p className="font-bold text-base text-slate-800 dark:text-slate-200">{periodo.umidade_min}% - {periodo.umidade_max}%</p>
             </div>
-            <div className="text-center">
-              <p className="text-muted-foreground">Vento</p>
-              <p className="font-semibold">
-                {periodo.vento_int ? `${periodo.vento_int} km/h` : 'N/A'} {periodo.vento_dir || ''}
+
+            {/* Vento */}
+            <div className="text-center p-4 bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 rounded-lg border border-green-100 dark:border-green-800">
+              <Wind className="h-6 w-6 text-green-500 mx-auto mb-2" />
+              <p className="text-xs text-slate-600 dark:text-slate-400 mb-1 font-medium">VENTO</p>
+              <p className="font-bold text-base text-slate-800 dark:text-slate-200">
+                {(() => {
+                  const velocidade = periodo.vento_int || periodo.int_vento;
+                  const direcao = periodo.vento_dir || periodo.dir_vento;
+                  if (velocidade && velocidade !== "0") {
+                    return `${velocidade} km/h ${direcao || ''}`;
+                  }
+                  return direcao || 'Calmo';
+                })()}
               </p>
+            </div>
+
+            {/* Índice UV */}
+            <div className="text-center p-4 bg-gradient-to-br from-yellow-50 to-amber-50 dark:from-yellow-900/20 dark:to-amber-900/20 rounded-lg border border-yellow-100 dark:border-yellow-800">
+              <Sun className="h-6 w-6 text-yellow-500 mx-auto mb-2" />
+              <p className="text-xs text-slate-600 dark:text-slate-400 mb-1 font-medium">ÍNDICE UV</p>
+              <div className="flex justify-center mt-1">
+                {periodo.indice_uv ? (
+                  <span className={`inline-flex items-center px-4 py-2 rounded-full text-sm font-bold shadow-md ${parseInt(periodo.indice_uv) <= 2 ? 'bg-green-500 text-white' :
+                    parseInt(periodo.indice_uv) <= 5 ? 'bg-yellow-500 text-white' :
+                      parseInt(periodo.indice_uv) <= 7 ? 'bg-orange-500 text-white' :
+                        parseInt(periodo.indice_uv) <= 10 ? 'bg-red-500 text-white' :
+                          'bg-purple-500 text-white'
+                    }`}>
+                    {periodo.indice_uv}
+                  </span>
+                ) : (
+                  <span className="text-slate-500 dark:text-slate-400 font-semibold">N/A</span>
+                )}
+              </div>
             </div>
           </div>
         </div>
@@ -250,6 +382,9 @@ const PeriodoCard = ({ periodo, nomePeriodo }: { periodo: INMETPeriodo; nomePeri
 
       {/* Informações detalhadas */}
       <DetailedWeatherInfo periodo={periodo} />
+
+      {/* Informações extras */}
+      <ExtraWeatherInfo periodo={periodo} />
 
       {/* Debug de campos não utilizados ou diferentes */}
       {(periodo.ico && periodo.ico !== periodo.icone) && (
@@ -270,7 +405,12 @@ const PeriodoCard = ({ periodo, nomePeriodo }: { periodo: INMETPeriodo; nomePeri
           'visibilidade', 'ponto_orvalho', 'indice_uv', 'radiacao_solar',
           'rajada_vento', 'sensacao_termica_max', 'sensacao_termica_min',
           'probabilidade_chuva', 'volume_chuva', 'nascer_sol', 'por_sol',
-          'fase_lua', 'direcao_vento_graus', 'cobertura_nuvens'
+          'fase_lua', 'direcao_vento_graus', 'cobertura_nuvens',
+          // Novos campos detectados
+          'dir_vento', 'int_vento', 'cod_icone', 'temp_max_tende',
+          'cod_temp_max_tende', 'temp_max_tende_icone', 'temp_min_tende',
+          'cod_temp_min_tende', 'temp_min_tende_icone', 'estacao',
+          'hora', 'nascer', 'ocaso', 'fonte'
         ];
         return !knownFields.includes(key) && (periodo as any)[key];
       }).length > 0 && (
@@ -287,7 +427,12 @@ const PeriodoCard = ({ periodo, nomePeriodo }: { periodo: INMETPeriodo; nomePeri
                   'visibilidade', 'ponto_orvalho', 'indice_uv', 'radiacao_solar',
                   'rajada_vento', 'sensacao_termica_max', 'sensacao_termica_min',
                   'probabilidade_chuva', 'volume_chuva', 'nascer_sol', 'por_sol',
-                  'fase_lua', 'direcao_vento_graus', 'cobertura_nuvens'
+                  'fase_lua', 'direcao_vento_graus', 'cobertura_nuvens',
+                  // Novos campos detectados
+                  'dir_vento', 'int_vento', 'cod_icone', 'temp_max_tende',
+                  'cod_temp_max_tende', 'temp_max_tende_icone', 'temp_min_tende',
+                  'cod_temp_min_tende', 'temp_min_tende_icone', 'estacao',
+                  'hora', 'nascer', 'ocaso', 'fonte'
                 ];
                 return !knownFields.includes(key) && (periodo as any)[key];
               }).map(key => (

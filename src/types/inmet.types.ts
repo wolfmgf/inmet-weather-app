@@ -89,6 +89,90 @@ export interface INMETPeriodo {
   // ========== CAMPOS OPCIONAIS ==========
 
   /**
+   * Direção alternativa do vento - variação de vento_dir
+   * Usado quando há múltiplas direções detectadas
+   */
+  dir_vento?: string;
+
+  /**
+   * Intensidade alternativa do vento - variação de vento_int
+   * Usado para dados de alta precisão ou múltiplas medições
+   */
+  int_vento?: string;
+
+  /**
+   * Código numérico do ícone meteorológico - ex: "36", "37", "58"
+   * Alternativa ao campo 'ico' para códigos específicos
+   */
+  cod_icone?: string;
+
+  /**
+   * Tendência da temperatura máxima - ex: "Estável", "Aumentando", "Diminuindo"
+   * Indica se a temperatura tende a subir, descer ou manter-se
+   */
+  temp_max_tende?: string;
+
+  /**
+   * Código da tendência da temperatura máxima - ex: "74"
+   * Código numérico correspondente à tendência
+   */
+  cod_temp_max_tende?: string;
+
+  /**
+   * Ícone da tendência da temperatura máxima em formato base64
+   * Representação visual da tendência térmica
+   */
+  temp_max_tende_icone?: string;
+
+  /**
+   * Tendência da temperatura mínima - ex: "Estável", "Aumentando", "Diminuindo"
+   * Indica se a temperatura tende a subir, descer ou manter-se
+   */
+  temp_min_tende?: string;
+
+  /**
+   * Código da tendência da temperatura mínima - ex: "74"
+   * Código numérico correspondente à tendência
+   */
+  cod_temp_min_tende?: string;
+
+  /**
+   * Ícone da tendência da temperatura mínima em formato base64
+   * Representação visual da tendência térmica
+   */
+  temp_min_tende_icone?: string;
+
+  /**
+   * Estação do ano - ex: "Inverno", "Verão", "Outono", "Primavera"
+   * Contexto sazonal dos dados meteorológicos
+   */
+  estacao?: string;
+
+  /**
+   * Hora específica da previsão - ex: "10", "14", "20"
+   * Horário exato para qual a previsão é válida
+   */
+  hora?: string;
+
+  /**
+   * Horário do nascer do sol - formato alternativo - ex: "05h37"
+   * Versão alternativa de nascer_sol com formatação diferente
+   */
+  nascer?: string;
+
+  /**
+   * Horário do pôr do sol - formato alternativo - ex: "17h16"
+   * Versão alternativa de por_sol com formatação diferente
+   */
+  ocaso?: string;
+
+  /**
+   * Fonte dos dados meteorológicos - ex: "prevmet", "INMET"
+   * Identifica o sistema ou fonte específica dos dados
+   */
+  fonte?: string;
+
+  /**
    * Pressão atmosférica em hectopascais (hPa)
    * Valores normais: 1000-1020 hPa
    */

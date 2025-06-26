@@ -40,41 +40,47 @@ const normalizeString = (str: string) =>
  * @returns Página com previsão do tempo ou mensagens de erro
  */
 export default async function PrevisaoPage({ searchParams }: PrevisaoPageProps) {
-  const cityQuery = typeof searchParams.cidade === 'string' ? searchParams.cidade : '';
+  const codeParam = typeof searchParams.codigo === 'string' ? searchParams.codigo : undefined;
+  const cityParam = typeof searchParams.cidade === 'string' ? searchParams.cidade : undefined;
   let previsao: INMETPrevisaoCompleta | null = null;
   let cidadeEncontrada: INMETMunicipio | null = null;
   let error = '';
 
-  if (cityQuery) {
-    const municipios = await getTodosMunicipios();
-    if (municipios.length > 0) {
-      cidadeEncontrada = municipios.find(m => normalizeString(m.nome) === normalizeString(cityQuery)) || null;
-
-      if (cidadeEncontrada) {
-        previsao = await getPrevisaoPorCodigo(cidadeEncontrada.geocode.toString());
-        console.log('[DEBUG PREVISAO PAGE] - Dados recebidos da API:', JSON.stringify(previsao, null, 2));
-        if (previsao) {
-          // Verificar estrutura dos dados especificamente para vento
-          const primeirosDados = Object.values(previsao)[0];
-          if (primeirosDados) {
-            const primeiroDia = Object.values(primeirosDados)[0];
-            if (primeiroDia) {
-              console.log('[DEBUG PREVISAO PAGE] - Dados manhã:', {
-                vento_int: primeiroDia.manha.vento_int,
-                vento_dir: primeiroDia.manha.vento_dir,
-                keys: Object.keys(primeiroDia.manha)
-              });
-            }
+  const municipios = await getTodosMunicipios();
+  if (municipios.length === 0) {
+    error = "O serviço de meteorologia parece estar offline. Tente novamente mais tarde.";
+  } else if (codeParam) {
+    // Busca por código de município
+    cidadeEncontrada = municipios.find(m => m.geocode.toString() === codeParam) || null;
+    if (cidadeEncontrada) {
+      previsao = await getPrevisaoPorCodigo(codeParam);
+    } else {
+      error = `Município com código ${codeParam} não encontrado.`;
+    }
+  } else if (cityParam) {
+    // Busca por nome de cidade
+    cidadeEncontrada = municipios.find(m => normalizeString(m.nome) === normalizeString(cityParam)) || null;
+    if (cidadeEncontrada) {
+      previsao = await getPrevisaoPorCodigo(cidadeEncontrada.geocode.toString());
+      console.log('[DEBUG PREVISAO PAGE] - Dados recebidos da API:', JSON.stringify(previsao, null, 2));
+      if (previsao) {
+        // Verificar estrutura dos dados especificamente para vento
+        const primeirosDados = Object.values(previsao)[0];
+        if (primeirosDados) {
+          const primeiroDia = Object.values(primeirosDados)[0];
+          if (primeiroDia) {
+            console.log('[DEBUG PREVISAO PAGE] - Dados manhã:', {
+              vento_int: primeiroDia.manha.vento_int,
+              vento_dir: primeiroDia.manha.vento_dir,
+              keys: Object.keys(primeiroDia.manha)
+            });
           }
         }
-        if (!previsao) {
-          error = "A previsão para esta cidade não está disponível no momento.";
-        }
       } else {
-        error = `O município "${cityQuery}" não foi encontrado. Por favor, verifique a ortografia.`;
+        error = "A previsão para esta cidade não está disponível no momento.";
       }
     } else {
-      error = "O serviço de meteorologia parece estar offline. Tente novamente mais tarde.";
+      error = `O município "${cityParam}" não foi encontrado. Por favor, verifique a ortografia.`;
     }
   }
 

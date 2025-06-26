@@ -58,9 +58,7 @@ const PREVISAO_CACHE_TIME = 3600;
  */
 export async function getTodosMunicipios(): Promise<INMETMunicipio[]> {
   try {
-    console.log(
-      `[INMET Service] Buscando lista de municípios em: ${API_BASE_URL}/municipios`
-    );
+    console.log("🏙️ [INMET] Buscando lista de municípios...");
 
     const response = await fetch(`${API_BASE_URL}/municipios`, {
       next: { revalidate: MUNICIPIOS_CACHE_TIME },
@@ -75,16 +73,13 @@ export async function getTodosMunicipios(): Promise<INMETMunicipio[]> {
     }
 
     const municipios = await response.json();
-    console.log(
-      `[INMET Service] ✅ ${municipios.length} municípios carregados com sucesso`
-    );
+    console.log(`✅ [INMET] ${municipios.length} municípios obtidos`);
+    console.log("� [INMET] Dados dos municípios:");
+    console.log(JSON.stringify(municipios, null, 2));
 
     return municipios;
   } catch (error) {
-    console.error("[INMET Service] ❌ Erro ao buscar municípios:", error);
-
-    // Fallback para dados mock em caso de erro
-    console.log("[INMET Service] 🔄 Utilizando dados mock de municípios");
+    console.error("❌ [INMET] Erro ao buscar municípios:", error);
     return getMunicipiosMock();
   }
 }
@@ -113,9 +108,7 @@ export async function getPrevisaoPorCodigo(
   codigo: string
 ): Promise<INMETPrevisaoCompleta | null> {
   try {
-    console.log(
-      `[INMET Service] 🔍 Buscando previsão para município: ${codigo}`
-    );
+    console.log(`🌤️ [INMET] Buscando previsão para município: ${codigo}`);
 
     // Lista de endpoints ordenados por prioridade/estabilidade
     const endpoints = [
@@ -130,9 +123,7 @@ export async function getPrevisaoPorCodigo(
 
       try {
         console.log(
-          `[INMET Service] 📡 Tentativa ${i + 1}/${
-            endpoints.length
-          }: ${endpoint}`
+          `📡 [INMET] Tentativa ${i + 1}/${endpoints.length}: ${endpoint}`
         );
 
         const response = await fetch(endpoint, {
@@ -146,32 +137,50 @@ export async function getPrevisaoPorCodigo(
         if (response.ok) {
           const data = await response.json();
           console.log(
-            `[INMET Service] ✅ Previsão obtida com sucesso do endpoint ${
-              i + 1
-            }`
+            `✅ [INMET] Dados obtidos com sucesso do endpoint ${i + 1}`
           );
+          console.log("📋 [INMET] Dados da previsão:");
+          console.log(JSON.stringify(data, null, 2));
+
+          // Normaliza campos de índice UV e velocidade do vento
+          Object.keys(data).forEach((codigoCidade) => {
+            const dias = data[codigoCidade];
+            Object.keys(dias).forEach((dia) => {
+              const previsaoDia = dias[dia];
+              (["manha", "tarde", "noite"] as const).forEach((periodoKey) => {
+                const periodo = previsaoDia[periodoKey];
+                // UV alternativo
+                if ((periodo as any).uv && !periodo.indice_uv) {
+                  periodo.indice_uv = (periodo as any).uv;
+                }
+                // Velocidade do vento alternativa
+                if ((periodo as any).wind_speed && !periodo.vento_int) {
+                  periodo.vento_int = (periodo as any).wind_speed;
+                }
+                if ((periodo as any).velocidade_vento && !periodo.vento_int) {
+                  periodo.vento_int = (periodo as any).velocidade_vento;
+                }
+              });
+            });
+          });
+
           return data;
         } else {
           console.log(
-            `[INMET Service] ⚠️ Endpoint retornou status ${response.status}`
+            `⚠️ [INMET] Endpoint ${i + 1} falhou - Status: ${response.status}`
           );
         }
       } catch (endpointError) {
-        console.log(
-          `[INMET Service] ❌ Erro no endpoint ${i + 1}:`,
-          endpointError
-        );
+        console.log(`❌ [INMET] Erro no endpoint ${i + 1}:`, endpointError);
         continue;
       }
     }
 
     // Se nenhum endpoint funcionar, utilizar dados mock
-    console.warn(
-      `[INMET Service] 🔄 Todos os endpoints falharam. Utilizando dados mock para código ${codigo}`
-    );
+    console.log("⚠️ [INMET] Todos os endpoints falharam, usando dados mock");
     return getMockPrevisao(codigo);
   } catch (error) {
-    console.error("[INMET Service] ❌ Erro geral na busca de previsão:", error);
+    console.error("❌ [INMET] Erro na busca de previsão:", error);
     return getMockPrevisao(codigo);
   }
 }
@@ -189,9 +198,9 @@ export async function getPrevisaoPorCodigo(
  * @private
  */
 function getMunicipiosMock(): INMETMunicipio[] {
-  console.log("[INMET Service] 📋 Gerando dados mock de municípios");
+  console.log("🏙️ [INMET] Gerando dados mock de municípios");
 
-  return [
+  const municipiosMock = [
     {
       geocode: 3550308,
       nome: "São Paulo",
@@ -263,6 +272,26 @@ function getMunicipiosMock(): INMETMunicipio[] {
       latitude: "-3.1190",
     },
   ];
+
+  console.log(
+    `[Mock Service] ✅ ${municipiosMock.length} municípios mock gerados`
+  );
+  console.log("[Mock Service] 🗺️  Municípios incluídos:");
+  municipiosMock.forEach((municipio, index) => {
+    console.log(
+      `  ${index + 1}. ${municipio.nome}/${municipio.sigla} (${
+        municipio.geocode
+      })`
+    );
+  });
+
+  const estadosUnicos = Array.from(new Set(municipiosMock.map((m) => m.sigla)));
+  console.log(
+    `[Mock Service] 📍 Estados cobertos: ${estadosUnicos.join(", ")}`
+  );
+  console.log("=".repeat(60));
+
+  return municipiosMock;
 }
 
 /**
@@ -279,29 +308,19 @@ function getMunicipiosMock(): INMETMunicipio[] {
  * @private
  */
 function getMockPrevisao(codigo: string): INMETPrevisaoCompleta {
-  console.log(
-    `[INMET Service] 📋 Gerando dados mock de previsão para código: ${codigo}`
-  );
+  console.log(`🎭 [INMET] Gerando dados mock para código: ${codigo}`);
 
   const hoje = new Date();
   const amanha = new Date(hoje);
   amanha.setDate(hoje.getDate() + 1);
 
-  /**
-   * Formata data no padrão YYYY-MM-DD usado pela API
-   * @param {Date} date - Data a ser formatada
-   * @returns {string} Data formatada
-   */
   const formatDate = (date: Date): string => {
-    return date.toISOString().split("T")[0];
+    const day = String(date.getDate()).padStart(2, "0");
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const year = date.getFullYear();
+    return `${day}/${month}/${year}`;
   };
 
-  /**
-   * Gera dados mock para um período específico
-   * @param {Date} data - Data do período
-   * @param {string} periodo - Nome do período (manhã, tarde, noite)
-   * @returns {object} Dados completos do período
-   */
   const gerarDadosPeriodo = (data: Date, periodo: string) => {
     const configs = {
       manha: {
@@ -332,7 +351,7 @@ function getMockPrevisao(codigo: string): INMETPrevisaoCompleta {
 
     const config = configs[periodo as keyof typeof configs];
 
-    return {
+    const dadosPeriodo = {
       entidade: "INMET",
       uf: "BR",
       cidade: "Cidade Exemplo",
@@ -364,9 +383,16 @@ function getMockPrevisao(codigo: string): INMETPrevisaoCompleta {
       direcao_vento_graus: "45",
       cobertura_nuvens: "40",
     };
+
+    console.log(
+      `[Mock Service] 🕐 Período ${periodo} - ${
+        Object.keys(dadosPeriodo).length
+      } campos gerados`
+    );
+    return dadosPeriodo;
   };
 
-  return {
+  const mockData = {
     [codigo]: {
       [formatDate(hoje)]: {
         manha: gerarDadosPeriodo(hoje, "manha"),
@@ -380,33 +406,23 @@ function getMockPrevisao(codigo: string): INMETPrevisaoCompleta {
       },
     },
   };
+
+  console.log("📋 [INMET] Dados mock gerados:");
+  console.log(JSON.stringify(mockData, null, 2));
+
+  return mockData;
 }
 
 // ========== FUNÇÕES AUXILIARES PÚBLICAS ==========
 
 /**
  * Busca municípios com nome ou sigla similar ao termo fornecido
- *
- * @description Função utilitária para filtrar municípios baseado em busca textual.
- * Suporta busca por nome parcial ou sigla do estado.
- *
- * @param {string} termo - Termo de busca (nome ou sigla)
- * @param {INMETMunicipio[]} municipios - Lista completa de municípios
- *
- * @returns {INMETMunicipio[]} Lista filtrada de municípios
- *
- * @example
- * ```typescript
- * const todosMunicipios = await getTodosMunicipios();
- * const saoPaulo = buscarMunicipios("São Paulo", todosMunicipios);
- * const cidadesRJ = buscarMunicipios("RJ", todosMunicipios);
- * ```
  */
 export function buscarMunicipios(
   termo: string,
   municipios: INMETMunicipio[]
 ): INMETMunicipio[] {
-  if (!termo || termo.length < 2) return municipios.slice(0, 50); // Limita resultados
+  if (!termo || termo.length < 2) return municipios.slice(0, 50);
 
   const termoLower = termo.toLowerCase().trim();
 
@@ -416,25 +432,11 @@ export function buscarMunicipios(
         municipio.nome.toLowerCase().includes(termoLower) ||
         municipio.sigla.toLowerCase().includes(termoLower)
     )
-    .slice(0, 100); // Limita a 100 resultados para performance
+    .slice(0, 100);
 }
 
 /**
  * Valida se um código de município é válido
- *
- * @description Verifica se o código fornecido está no formato correto
- * e existe na lista de municípios do INMET.
- *
- * @param {string} codigo - Código do município a ser validado
- * @param {INMETMunicipio[]} municipios - Lista de municípios válidos
- *
- * @returns {boolean} True se o código for válido
- *
- * @example
- * ```typescript
- * const municipios = await getTodosMunicipios();
- * const valido = validarCodigoMunicipio("3550308", municipios); // true para São Paulo
- * ```
  */
 export function validarCodigoMunicipio(
   codigo: string,
@@ -449,21 +451,6 @@ export function validarCodigoMunicipio(
 
 /**
  * Obtém informações do município pelo código
- *
- * @description Busca os dados completos de um município específico
- * utilizando seu geocode.
- *
- * @param {string} codigo - Código do município
- * @param {INMETMunicipio[]} municipios - Lista de municípios
- *
- * @returns {INMETMunicipio | null} Dados do município ou null se não encontrado
- *
- * @example
- * ```typescript
- * const municipios = await getTodosMunicipios();
- * const saoPaulo = obterMunicipioPorCodigo("3550308", municipios);
- * console.log(saoPaulo?.nome); // "São Paulo"
- * ```
  */
 export function obterMunicipioPorCodigo(
   codigo: string,
@@ -475,10 +462,76 @@ export function obterMunicipioPorCodigo(
   );
 }
 
-// ========== FUNÇÕES COMPATIBILIDADE (ALIASES) ==========
-
 /**
- * Alias para getPrevisaoPorCodigo() - mantém compatibilidade com código existente
- * @deprecated Use getPrevisaoPorCodigo() diretamente
+ * Encontra o município mais próximo baseado em coordenadas geográficas
+ *
+ * @param latitude - Latitude do ponto de referência
+ * @param longitude - Longitude do ponto de referência
+ * @param municipios - Lista de municípios para buscar
+ * @returns Município mais próximo ou null se não encontrado
  */
-export const buscarPrevisao = getPrevisaoPorCodigo;
+export function encontrarMunicipioMaisProximo(
+  latitude: number,
+  longitude: number,
+  municipios: INMETMunicipio[]
+): INMETMunicipio | null {
+  if (!municipios.length) return null;
+
+  /**
+   * Calcula a distância entre duas coordenadas usando a fórmula de Haversine
+   *
+   * @param lat1 - Latitude do primeiro ponto
+   * @param lon1 - Longitude do primeiro ponto
+   * @param lat2 - Latitude do segundo ponto
+   * @param lon2 - Longitude do segundo ponto
+   * @returns Distância em quilômetros
+   */
+  const calcularDistancia = (
+    lat1: number,
+    lon1: number,
+    lat2: number,
+    lon2: number
+  ): number => {
+    const R = 6371; // Raio da Terra em km
+    const dLat = ((lat2 - lat1) * Math.PI) / 180;
+    const dLon = ((lon2 - lon1) * Math.PI) / 180;
+    const a =
+      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+      Math.cos((lat1 * Math.PI) / 180) *
+        Math.cos((lat2 * Math.PI) / 180) *
+        Math.sin(dLon / 2) *
+        Math.sin(dLon / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    return R * c;
+  };
+
+  let municipioMaisProximo = municipios[0];
+  let menorDistancia = calcularDistancia(
+    latitude,
+    longitude,
+    parseFloat(municipios[0].latitude),
+    parseFloat(municipios[0].longitude)
+  );
+
+  for (const municipio of municipios) {
+    const distancia = calcularDistancia(
+      latitude,
+      longitude,
+      parseFloat(municipio.latitude),
+      parseFloat(municipio.longitude)
+    );
+
+    if (distancia < menorDistancia) {
+      menorDistancia = distancia;
+      municipioMaisProximo = municipio;
+    }
+  }
+
+  console.log(
+    `🎯 [INMET] Município mais próximo: ${municipioMaisProximo.nome}/${
+      municipioMaisProximo.sigla
+    } (${menorDistancia.toFixed(2)}km)`
+  );
+
+  return municipioMaisProximo;
+}

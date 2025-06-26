@@ -1,13 +1,15 @@
 /**
  * @fileoverview Página inicial da aplicação de previsão do tempo
- * Exibe formulário de busca e informações sobre as funcionalidades
+ * Exibe formulário de busca, seletor de região e informações sobre as funcionalidades
  * @author Equipe de Desenvolvimento
- * @version 1.0.0
+ * @version 2.0.0
  */
 
 // app/page.tsx
 import CitySearchForm from '@/components/CitySearchForm';
+import MapSelectorWrapper from '@/components/MapSelectorWrapper';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   Thermometer,
   Wind,
@@ -17,15 +19,17 @@ import {
   Gauge,
   CloudRain,
   Sunrise,
-  MapPin
+  MapPin,
+  Search,
+  Navigation
 } from 'lucide-react';
 
 /**
  * Página inicial da aplicação
- * Apresenta o formulário de busca e demonstra as funcionalidades disponíveis
+ * Apresenta múltiplas formas de busca e demonstra as funcionalidades disponíveis
  * 
  * @component
- * @returns Página inicial com hero section, formulário de busca e grid de funcionalidades
+ * @returns Página inicial com hero section, formulários de busca e grid de funcionalidades
  */
 export default function HomePage() {
   return (
@@ -38,7 +42,56 @@ export default function HomePage() {
         <p className="text-xl text-muted-foreground mb-8">
           Dados meteorológicos oficiais do Instituto Nacional de Meteorologia
         </p>
-        <CitySearchForm />
+
+        {/* Múltiplas formas de buscar cidades */}
+        <div className="max-w-4xl mx-auto">
+          <Tabs defaultValue="busca" className="w-full">
+            <TabsList className="grid w-full grid-cols-2 mb-8">
+              <TabsTrigger value="busca" className="flex items-center gap-2">
+                <Search className="h-4 w-4" />
+                Buscar Cidade
+              </TabsTrigger>
+              <TabsTrigger value="mapa" className="flex items-center gap-2">
+                <MapPin className="h-4 w-4" />
+                Navegar no Mapa
+              </TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="busca" className="space-y-4">
+              <div className="flex flex-col items-center space-y-4">
+                <div className="flex items-center gap-2 text-lg font-medium text-muted-foreground">
+                  <Search className="h-5 w-5" />
+                  Digite o nome da cidade
+                </div>
+                <CitySearchForm />
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm text-muted-foreground max-w-2xl">
+                  <div className="flex items-center gap-2">
+                    <Navigation className="h-4 w-4 text-blue-500" />
+                    <span>Geolocalização automática</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Search className="h-4 w-4 text-green-500" />
+                    <span>Busca com autocompletar</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <MapPin className="h-4 w-4 text-orange-500" />
+                    <span>Navegação por teclado</span>
+                  </div>
+                </div>
+              </div>
+            </TabsContent>
+
+            <TabsContent value="mapa" className="space-y-4">
+              <div className="flex flex-col items-center space-y-4">
+                <div className="flex items-center gap-2 text-lg font-medium text-muted-foreground">
+                  <MapPin className="h-5 w-5" />
+                  Navegue pelo Brasil
+                </div>
+                <MapSelectorWrapper />
+              </div>
+            </TabsContent>
+          </Tabs>
+        </div>
       </div>
 
       {/* Features Grid */}
@@ -142,7 +195,7 @@ export default function HomePage() {
       </div>
 
       {/* Instructions */}
-      <Card className="bg-gradient-to-r from-blue-500 to-green-500 text-white">
+      <Card className="bg-gradient-to-r from-blue-500 to-green-500 text-white mb-8">
         <CardContent className="p-8 text-center">
           <h2 className="text-2xl font-bold mb-4">Como usar</h2>
           <p className="text-lg">
@@ -151,6 +204,57 @@ export default function HomePage() {
           </p>
         </CardContent>
       </Card>
+
+      {/* Navigation Links */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <Card className="hover:shadow-lg transition-shadow">
+          <CardContent className="p-6">
+            <div className="flex items-center gap-4 mb-4">
+              <div className="p-3 bg-blue-100 rounded-lg">
+                <Sun className="h-6 w-6 text-blue-600" />
+              </div>
+              <div>
+                <h3 className="text-lg font-semibold">Dados da API</h3>
+                <p className="text-sm text-muted-foreground">
+                  Visualize os dados brutos retornados pela API do INMET
+                </p>
+              </div>
+            </div>
+            <div className="text-center">
+              <a
+                href="/dados-api"
+                className="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-blue-600 text-white hover:bg-blue-700 h-10 px-4 py-2"
+              >
+                Ver Dados da API
+              </a>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="hover:shadow-lg transition-shadow">
+          <CardContent className="p-6">
+            <div className="flex items-center gap-4 mb-4">
+              <div className="p-3 bg-green-100 rounded-lg">
+                <MapPin className="h-6 w-6 text-green-600" />
+              </div>
+              <div>
+                <h3 className="text-lg font-semibold">Debug & Logs</h3>
+                <p className="text-sm text-muted-foreground">
+                  Página para desenvolvedores testarem a API
+                </p>
+              </div>
+            </div>
+            <div className="text-center">
+              <a
+                href="/debug"
+                className="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-green-600 text-white hover:bg-green-700 h-10 px-4 py-2"
+              >
+                Acessar Debug
+              </a>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
     </main>
   );
 }
